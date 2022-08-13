@@ -1,0 +1,138 @@
+#!/bin/bash
+
+# A script to interactively provide metadata for a comment on all Ogg Vorbis files in a directory, generally used for songs downloaded from YouTube because they don't have metadata. This is in place of doing it manually in Rhythmbox or another music player.
+
+#Exit on errors
+set -e
+for file in *.ogg; do
+	if [ "${file}" = "*.ogg" ]; then
+		echo "No files found. Please execute in a directory with .ogg files." && exit 0
+	fi
+done
+
+get_globals() {
+	read -p "How many tracks in total? " tracktotal
+	read -p "How many discs in total? " disctotal
+	
+	read -p "Is there one year? (Y/n) " single_year
+	case $single_year in
+		n|N) ask_year=true;;
+		*) ask_year=false;;
+	esac
+
+	read -p "Is there one artist? (Y/n) " single_artist
+	case $single_artist in
+		n|N) ask_artist=true;;
+		*) ask_artist=false;;
+	esac
+	
+	read -p "Is there one album? (Y/n) " single_album
+	case $single_album in
+		n|N) ask_album=true;;
+		*) ask_album=false;;
+	esac
+	
+	read -p "Is there one genre? (Y/n) " single_genre
+	case $single_genre in
+		n|N) ask_genre=true;;
+		*) ask_genre=false;;
+	esac
+
+	read -p "Are files sequential by track number? (y/N) " sequential
+	case $sequential in
+		y|Y) ask_tracknum=false;;
+		*) ask_tracknum=true;;
+	esac
+
+	read -p "Should Title be file name? (y/N) " title_as_file
+	case $title_as_file in
+		y|Y) ask_title=false;;
+		*) ask_title=true;;
+	esac
+
+	if [ $ask_year = false ]; then
+		read -p "Year: " year
+	fi
+
+	if [ $ask_artist = false ]; then
+		read -p "Artist: " artist
+	fi
+
+	if [ $ask_album = false ]; then
+		read -p "Album: " album
+	fi
+
+	if [ $ask_genre = false ]; then
+		read -p "Genre: " genre
+	fi
+}
+
+get_comments() {
+	if [ $ask_title = true ]; then
+		read -p "Title: " title
+	fi
+
+	if [ $ask_year = true ]; then
+		read -p "Year: " year
+	fi
+
+	if [ $ask_tracknum = true ]; then
+		read -p "Track Number: " tracknumber
+	fi
+	
+	if [ $disctotal -ne 1 ]; then
+		read -p "Disc Number: " discnumber
+	else
+		discnumber=1
+	fi
+
+	if [ $ask_artist = true ]; then
+		read -p "Artist: " artist
+	fi
+	
+	if [ $ask_album = true ]; then
+		read -p "Album: " album
+	fi
+
+	if [ $ask_genre = true ]; then
+		read -p "Genre: " genre
+	fi
+}
+
+loop () {
+	for file in *.ogg; do
+		echo "File: $file"
+		get_comments
+		if [ $ask_title = false ]; then
+			if [[ "$file" == *".ogg" ]]; then
+				truncfile=$(echo "$file" | sed 's/\.[^.]*$//')
+				title="$truncfile"
+			else
+				title="$file"
+			fi
+		fi
+		vorbiscomment -a "$file" \
+			-t "TITLE=$title" \
+			-t "DATE=$year" \
+			-t "TRACKNUMBER=$tracknumber" \
+			-t "TRACKTOTAL=$tracktotal" \
+			-t "DISCNUMBER=$discnumber" \
+			-t "DISCTOTAL=$disctotal" \
+			-t "ARTIST=$artist" \
+			-t "ALBUM=$album" \
+			-t "GENRE=$genre"
+	done
+}
+
+comment() {
+	if [ ask_tracknum = false ]; then
+		for tracknum in {1..$tracktotal}; do
+			loop && exit 0
+		done
+	else
+		loop && exit 0
+	fi
+}
+
+get_globals
+comment
