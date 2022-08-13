@@ -4,12 +4,15 @@
 
 #Exit on errors
 set -e
+
+#If there are no ogg files, exit the script
 for file in *.ogg; do
-	if [ "${file}" = "*.ogg" ]; then
-		echo "No files found. Please execute in a directory with .ogg files." && exit 0
+	if [ "${file}" = "*.ogg" ]; then # When there are no files matching a wildcard, the output is the wildcard, so check for that to know there are no files
+		echo "No files found. Please execute in a directory with .ogg files." && exit 1
 	fi
 done
 
+#Find global values for all files by asking user
 get_globals() {
 	read -p "How many tracks in total? " tracktotal
 	read -p "How many discs in total? " disctotal
@@ -67,6 +70,7 @@ get_globals() {
 	fi
 }
 
+#Ask user for values that change between files
 get_comments() {
 	if [ $ask_title = true ]; then
 		read -p "Title: " title
@@ -100,18 +104,25 @@ get_comments() {
 }
 
 loop () {
+	# Set a default track number in case files are sequential
+	tracknumber=1
 	for file in *.ogg; do
 		echo "File: $file"
+		
+		#Get user-inputted values
 		get_comments
+
+		#If we don't ask user for title, make it file name (exclude file extensions)
 		if [ $ask_title = false ]; then
 			if [[ "$file" == *".ogg" ]]; then
-				truncfile=$(echo "$file" | sed 's/\.[^.]*$//')
-				title="$truncfile"
+				title=$(echo "$file" | sed 's/\.[^.]*$//')
 			else
 				title="$file"
 			fi
 		fi
-		vorbiscomment -a "$file" \
+		
+		#Make the comment
+		vorbiscomment -w "$file" \
 			-t "TITLE=$title" \
 			-t "DATE=$year" \
 			-t "TRACKNUMBER=$tracknumber" \
@@ -121,18 +132,14 @@ loop () {
 			-t "ARTIST=$artist" \
 			-t "ALBUM=$album" \
 			-t "GENRE=$genre"
+
+		#Only increment track number if files are sequential
+		if [ $ask_tracknum = false ]; then
+			tracknumber=$((tracknumber+1))
+		fi
 	done
 }
 
-comment() {
-	if [ ask_tracknum = false ]; then
-		for tracknum in {1..$tracktotal}; do
-			loop && exit 0
-		done
-	else
-		loop && exit 0
-	fi
-}
-
+# Get global variables, do the for loop then exit
 get_globals
-comment
+loop && exit 0
