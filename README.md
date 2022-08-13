@@ -6,6 +6,4 @@ You should make sure the file called "forvorbiscomment" is executable with `chmo
 
 You can also feel free to put this script in your PATH.
 
-I didn't put comments in the code, but it does what I need it to (this is just a personal script I thought I'd put out publicly).
-
-Feel free to fork this repository if you want to make changes (i.e., to make it work for other file types).
+Feel free to fork this repository if you want to make changes (i.e., to make it work for other file types with a different program like an id3 tagger).
