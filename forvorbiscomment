@@ -49,8 +49,8 @@ get_globals() {
 
 	read -p "Should Title be file name? (Y/n) " title_as_file
 	case $title_as_file in
-		*) ask_title=false;;
 		n|N) ask_title=true;;
+		*) ask_title=false;;
 	esac
 
 	if [ $ask_year = false ]; then
