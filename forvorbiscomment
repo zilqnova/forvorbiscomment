@@ -47,10 +47,10 @@ get_globals() {
 		*) ask_tracknum=true;;
 	esac
 
-	read -p "Should Title be file name? (y/N) " title_as_file
+	read -p "Should Title be file name? (Y/n) " title_as_file
 	case $title_as_file in
-		y|Y) ask_title=false;;
-		*) ask_title=true;;
+		*) ask_title=false;;
+		n|N) ask_title=true;;
 	esac
 
 	if [ $ask_year = false ]; then
