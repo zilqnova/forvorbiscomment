@@ -14,8 +14,13 @@ done
 
 #Find global values for all files by asking user
 get_globals() {
-	read -p "How many tracks in total? " tracktotal
-	read -p "How many discs in total? " disctotal
+	tracktotal=$(ls *.ogg | wc -l)
+	
+	read -p "Is there one disc? (Y/n) " single_disc
+	case $single_disc in
+		n|N) read -p "How many discs in total? " disctotal;;
+		*) disctotal=1;;
+	esac
 	
 	read -p "Is there one year? (Y/n) " single_year
 	case $single_year in
