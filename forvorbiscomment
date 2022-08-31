@@ -176,16 +176,17 @@ loop () {
 
 # Get global variables (or defaults), do the for loop then exit
 
-#fix this
-#if [ -n $2 ]; then
-#	echo "Please only pass one option to this script. Valid options are -d (or leave blank). -h, or -i." && exit 1
-#fi
+help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file"
+
+if [ -n "$2" ]; then
+	echo -e "Please only pass one option to this script. $help_message" && exit 1
+fi
 
 case $1 in
 	-i|--interactive) get_globals;;
-	-h|--help) echo "Use in a directory with .ogg files. If you want to manually enter values (for example, if your file structure differs from the one this script looks for), use -i or --interactive." && exit 0;;
+	-h|--help) echo -e "Use in a directory with .ogg files. $help_message" && exit 0;;
 	""|-d|--defaults) default_variables;;
-	*) echo "Option $1 is not recognized. Valid options are -d (or leave blank). -h, or -i." && exit 1;;
+	*) echo -e "Option $1 is not recognized. $help_message" && exit 1;;
 esac
 
 loop && exit 0
