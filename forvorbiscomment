@@ -12,20 +12,43 @@ for file in *.ogg; do
 	fi
 done
 
+#Set tracktotal here so loop() has it regardless of function called prior
+tracktotal=$(ls *.ogg | wc -l)
+
+# For now this will still ask for some information but in the future will probably call another script to interface with the Discogs API
+default_variables() {
+	echo "Track total: $tracktotal"
+
+	disctotal=1
+	echo "Disc total: $disctotal"
+	
+	# Get artist from one directory back
+	ask_artist=false
+	artist=$(echo "$PWD" | awk -F/ '{print $(NF-1)}')
+	echo "Artist: $artist"
+
+	# Get album from current directory
+	ask_album=false
+	album=$(echo "$PWD" | awk -F/ '{print $NF}')
+	echo "Album: $album"
+
+	ask_year=false	
+	read -p "Year: " year
+
+	ask_genre=false
+	read -p "Genre: " genre
+
+	ask_tracknum=true
+	
+	ask_title=false
+}
+
 #Find global values for all files by asking user
 get_globals() {
-	tracktotal=$(ls *.ogg | wc -l)
-	
 	read -p "Is there one disc? (Y/n) " single_disc
 	case $single_disc in
 		n|N) read -p "How many discs in total? " disctotal;;
 		*) disctotal=1;;
-	esac
-	
-	read -p "Is there one year? (Y/n) " single_year
-	case $single_year in
-		n|N) ask_year=true;;
-		*) ask_year=false;;
 	esac
 
 	read -p "Is there one artist? (Y/n) " single_artist
@@ -40,6 +63,12 @@ get_globals() {
 		*) ask_album=false;;
 	esac
 	
+	read -p "Is there one year? (Y/n) " single_year
+	case $single_year in
+		n|N) ask_year=true;;
+		*) ask_year=false;;
+	esac
+
 	read -p "Is there one genre? (Y/n) " single_genre
 	case $single_genre in
 		n|N) ask_genre=true;;
@@ -145,6 +174,18 @@ loop () {
 	done
 }
 
-# Get global variables, do the for loop then exit
-get_globals
+# Get global variables (or defaults), do the for loop then exit
+
+#fix this
+#if [ -n $2 ]; then
+#	echo "Please only pass one option to this script. Valid options are -d (or leave blank). -h, or -i." && exit 1
+#fi
+
+case $1 in
+	-i|--interactive) get_globals;;
+	-h|--help) echo "Use in a directory with .ogg files. If you want to manually enter values (for example, if your file structure differs from the one this script looks for), use -i or --interactive." && exit 0;;
+	""|-d|--defaults) default_variables;;
+	*) echo "Option $1 is not recognized. Valid options are -d (or leave blank). -h, or -i." && exit 1;;
+esac
+
 loop && exit 0
