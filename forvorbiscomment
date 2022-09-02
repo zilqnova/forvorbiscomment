@@ -138,7 +138,9 @@ get_comments() {
 }
 
 yt_trim() {
-	title=$(echo "$1" | rev | cut -d ' ' -f1 --complement -s | rev)
+	if [[ "$1" == *"["*"]" ]]; then # does nothing if title does not end with brackets
+		title=$(echo "$1" | rev | cut -d ' ' -f1 --complement -s | rev) # reverses title, keeps everything but first field (i.e., the brackets) then un-reverses title.
+	fi
 }
 
 comment() {
@@ -179,7 +181,7 @@ comment() {
 
 # Get global variables (or defaults), do the for loop then exit
 
-help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option, conflicts with --interactive)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file (conflicts with defaults)\n\t-y, --yt-format\t\t| If files were downloaded with yt-dlp, automatically trims the bracket part out of the track name. Does nothing if used with --interactive or with a file that does not have this."
+help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option, conflicts with --interactive)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file (conflicts with defaults)\n\t-y, --yt-format\t\t| If files were downloaded with yt-dlp, automatically trims the bracket part out of the track name. Does nothing if used with --interactive or with a file that does not have this. However, if you set this option and the file name ends in [...] or [...].ogg it will cut out those brackets (be careful!)"
 
 # Loops through arguments and exits on conflicting values. This is not its own function because all script arguments have to then be passed to it to work and it's getting executed at the end of all other function definitions anyway.
 args=("$@")
