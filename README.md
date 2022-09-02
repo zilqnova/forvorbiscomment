@@ -23,7 +23,7 @@ Feel free to fork this repository if you want to make changes (i.e., to make it 
 - If the files you are running the script on were obtained by using yt-dlp, they will have brackets like [...] on the end of your file name. Passing the --yt-format option to the script will automatically trim this out of the file name if you use the default options or interactively choose to have the title of the track be the file name, but it will also trim out the last field (space-separated phrase, including words, parentheses, brackets, etc.) if it detects brackets. So, if the files were *not* obtained with those brackets and your title should have other brackets in it, **do not** use the -y option.
 
 ## Usage
-```bash
+```
 forvorbiscomment [arguments]
 Valid arguments are:
 -d, --defaults		| Use the default values of the script (default option, conflicts with --interactive)
