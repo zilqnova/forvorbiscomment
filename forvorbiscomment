@@ -12,7 +12,7 @@ for file in *.ogg; do
 	fi
 done
 
-#Set tracktotal here so loop() has it regardless of function called prior
+#Set tracktotal here so comment() has it regardless of function called prior
 tracktotal=$(ls *.ogg | wc -l)
 
 # For now this will still ask for some information but in the future will probably call another script to interface with the Discogs API
@@ -104,7 +104,7 @@ get_globals() {
 	fi
 }
 
-#Ask user for values that change between files
+#Ask user for values that change between files, called by comment()
 get_comments() {
 	if [ $ask_title = true ]; then
 		read -p "Title: " title
@@ -137,7 +137,11 @@ get_comments() {
 	fi
 }
 
-loop () {
+yt_trim() {
+	title=$(echo "$1" | rev | cut -d ' ' -f1 --complement -s | rev)
+}
+
+comment() {
 	# Set a default track number in case files are sequential
 	tracknumber=1
 	for file in *.ogg; do
@@ -148,10 +152,9 @@ loop () {
 
 		#If we don't ask user for title, make it file name (exclude file extensions)
 		if [ $ask_title = false ]; then
-			if [[ "$file" == *".ogg" ]]; then
-				title=$(echo "$file" | sed 's/\.[^.]*$//')
-			else
-				title="$file"
+			title=$(echo "$file" | sed 's/\.[^.]*$//')
+			if [ $yt_format = true ]; then
+				yt_trim "$title"
 			fi
 		fi
 		
@@ -176,17 +179,39 @@ loop () {
 
 # Get global variables (or defaults), do the for loop then exit
 
-help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file"
+help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option, conflicts with --interactive)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file (conflicts with defaults)\n\t-y, --yt-format\t\t| If files were downloaded with yt-dlp, automatically trims the bracket part out of the track name. Does nothing if used with --interactive or with a file that does not have this."
 
-if [ -n "$2" ]; then
-	echo -e "Please only pass one option to this script. $help_message" && exit 1
+# Loops through arguments and exits on conflicting values. This is not its own function because all script arguments have to then be passed to it to work and it's getting executed at the end of all other function definitions anyway.
+args=("$@")
+
+# Make interactive false by default so that it can be turned on if needed and other options can be passed to the script without having to specify --defaults
+interactive=false
+
+# uses 1st argument by shifting at end until no args remain
+for a in "${args[@]}"; do
+	case $1 in
+		-i|--interactive) interactive=true;;
+		-y|--yt-format) yt_format=true;;
+		#If any of the passed arguments are -h/--help, then just do that
+		-h|--help) echo -e "Use in a directory with .ogg files.\n$help_message" && exit 0;;
+		""|-d|--defaults) defaults=true;; #make defaults true solely to test if both -i and -d were passed
+		#If a wrong option is passed, tell the user which one and print help message.
+		*) echo -e "Error: option $a is not recognized.\n$help_message" && exit 1;;
+	esac
+done
+
+#tests for conflicting values
+if [[ $defaults = true && $interactive = true ]]; then
+	echo -e "Error: --defaults and --interactive cannot both be passed to the script. Please use only one.\n$help_message" && exit 1
 fi
 
-case $1 in
-	-i|--interactive) get_globals;;
-	-h|--help) echo -e "Use in a directory with .ogg files. $help_message" && exit 0;;
-	""|-d|--defaults) default_variables;;
-	*) echo -e "Option $1 is not recognized. $help_message" && exit 1;;
-esac
+#Does arguments
+if [ $interactive = true ]; then
+	get_globals
+else
+	# doesn't use defaults = true because -y or others can be passed to the script without specifying defaults = true and it's easier to not have to specify that it should be false if -i is passed
+	default_variables
+fi
 
-loop && exit 0
+comment
+exit 0
