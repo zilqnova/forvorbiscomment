@@ -178,6 +178,7 @@ args=("$@")
 
 # Make interactive false by default so that it can be turned on if needed and other options can be passed to the script without having to specify --defaults
 interactive=false
+yt_format=false
 
 # uses 1st argument by shifting at end until no args remain
 for a in "${args[@]}"; do
