@@ -5,16 +5,6 @@
 #Exit on errors
 set -e
 
-#If there are no ogg files, exit the script
-for file in *.ogg; do
-	if [ "${file}" = "*.ogg" ]; then # When there are no files matching a wildcard, the output is the wildcard, so check for that to know there are no files
-		echo "No files found. Please execute in a directory with .ogg files." && exit 1
-	fi
-done
-
-#Set tracktotal here so comment() has it regardless of function called prior
-tracktotal=$(ls *.ogg | wc -l)
-
 # For now this will still ask for some information but in the future will probably call another script to interface with the Discogs API
 default_variables() {
 	echo "Track total: $tracktotal"
@@ -181,7 +171,7 @@ comment() {
 
 # Get global variables (or defaults), do the for loop then exit
 
-help_message="Valid options are:\n\t-d, --defaults\t\t| Use the default values of the script (default option, conflicts with --interactive)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file (conflicts with defaults)\n\t-y, --yt-format\t\t| If files were downloaded with yt-dlp, automatically trims the bracket part out of the track name. Does nothing if used with --interactive or with a file that does not have this. However, if you set this option and the file name ends in [...] or [...].ogg it will cut out those brackets (be careful!)"
+help_message="Valid arguments are:\n\t-d, --defaults\t\t| Use the default values of the script (default option, conflicts with --interactive)\n\t-h, --help\t\t| Print these options\n\t-i, --interactive\t| Manually define values for metadata; choose which values are global and local to each file (conflicts with defaults)\n\t-y, --yt-format\t\t| If files were downloaded with yt-dlp, automatically trims the bracket part out of the track name. Does nothing if used with --interactive or with a file that does not have this. However, if you set this option and the file name ends in [...] or [...].ogg it will cut out those brackets (be careful!)"
 
 # Loops through arguments and exits on conflicting values. This is not its own function because all script arguments have to then be passed to it to work and it's getting executed at the end of all other function definitions anyway.
 args=("$@")
@@ -195,14 +185,24 @@ for a in "${args[@]}"; do
 		-i|--interactive) interactive=true;;
 		-y|--yt-format) yt_format=true;;
 		#If any of the passed arguments are -h/--help, then just do that
-		-h|--help) echo -e "Use in a directory with .ogg files.\n$help_message" && exit 0;;
+		-h|--help) echo -e "Use in a directory with .ogg files.\nUsage: forvorbiscomment [arguments]\n$help_message" && exit 0;;
 		""|-d|--defaults) defaults=true;; #make defaults true solely to test if both -i and -d were passed
 		#If a wrong option is passed, tell the user which one and print help message.
 		*) echo -e "Error: option $a is not recognized.\n$help_message" && exit 1;;
 	esac
 done
 
-#tests for conflicting values
+#If there are no ogg files, exit the script
+for file in *.ogg; do
+	if [ "${file}" = "*.ogg" ]; then # When there are no files matching a wildcard, the output is the wildcard, so check for that to know there are no files
+		echo "Error: no files found. Please execute in a directory with .ogg files." && exit 1
+	fi
+done
+
+#Set tracktotal here so comment() has it if it is not overwritten by interactive mode
+tracktotal=$(ls *.ogg | wc -l)
+
+#tests for conflicting values 
 if [[ $defaults = true && $interactive = true ]]; then
 	echo -e "Error: --defaults and --interactive cannot both be passed to the script. Please use only one.\n$help_message" && exit 1
 fi
