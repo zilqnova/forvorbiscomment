@@ -149,7 +149,7 @@ comment() {
 				yt_trim "$title"
 			fi
 		fi
-		
+	
 		#Make the comment
 		vorbiscomment -w "$file" \
 			-t "TITLE=$title" \
@@ -182,7 +182,7 @@ yt_format=false
 
 # uses 1st argument by shifting at end until no args remain
 for a in "${args[@]}"; do
-	case $1 in
+	case $a in
 		-i|--interactive) interactive=true;;
 		-y|--yt-format) yt_format=true;;
 		#If any of the passed arguments are -h/--help, then just do that
