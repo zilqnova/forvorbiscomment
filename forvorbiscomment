@@ -129,7 +129,7 @@ get_comments() {
 
 yt_trim() {
 	if [[ "$1" == *"["*"]" ]]; then # does nothing if title does not end with brackets
-		title=$(echo "$1" | rev | cut -d ' ' -f1 --complement -s | rev | sed 's/_/\//g') # reverses title, keeps everything but first field (i.e., the brackets) then un-reverses title. Any underscores are turned into slashes.
+		title=$(echo "$1" | rev | cut -d ' ' -f1 --complement -s | rev | sed -e 's/_/\//g' -e 's/⧸/\//g') # reverses title, keeps everything but first field (i.e., the brackets) then un-reverses title. Any underscores and false slashes are turned into slashes.
 	fi
 }
 
